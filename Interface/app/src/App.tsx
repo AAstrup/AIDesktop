@@ -1,10 +1,14 @@
-import { Button } from "@/components/ui/button"
-import JobTable from "./JobTable"
+// App.tsx
+import React from 'react';
+import JobTable from './JobTable';
+import { JobsProvider } from './JobsContext';
 
 export default function App() {
   return (
-    <div className="w-screen h-screen">
-      <JobTable />
-    </div>
-  )
+    <JobsProvider>
+      <div className="w-screen h-screen p-4">
+        <JobTable />
+      </div>
+    </JobsProvider>
+  );
 }
