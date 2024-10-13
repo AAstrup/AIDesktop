@@ -1,13 +1,20 @@
 
 import React from 'react';
 import './App.css';
+import { Flex, Text, Button, Theme, ThemePanel } from "@radix-ui/themes";
 
 function App() {
   return (
-    <h1 className="text-3xl font-bold underline text-red-600">
-      Simple React Typescript Tailwind Sample
-    </h1>
-  );  
+    <>
+      <Theme>
+        <Flex direction="column" gap="2">
+          <Text>Hello from Radix Themes :)</Text>
+          <Button>Let's go</Button>
+        </Flex>
+        <ThemePanel />
+      </Theme>
+    </>
+  );
 }
 
 export default App;
