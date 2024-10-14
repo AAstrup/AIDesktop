@@ -26,7 +26,7 @@ interface JobsContextType {
     updateJobTitle: (id: number, title: string) => void;
     selectJob: (id: number | null) => void;
     // Step functions
-    addStep: () => void;
+    addStep: (title: string) => void;
     deleteStep: (id: number) => void;
     toggleStepEnabled: (id: number) => void;
     updateStepTitle: (id: number, title: string) => void;
@@ -94,15 +94,14 @@ export const JobsProvider: React.FC<Props> = ({ children }) => {
     };
 
     // Step management functions
-    const addStep = () => {
+    const addStep = (title: string) => {
         if (selectedJobId === null) return;
 
-        const jobSteps = steps.filter((step) => step.jobId === selectedJobId);
         const newId = steps.length > 0 ? steps[steps.length - 1].id + 1 : 1;
         const newStep: Step = {
             id: newId,
             jobId: selectedJobId,
-            title: `Step ${jobSteps.length + 1}`,
+            title: title,
             enabled: true,
         };
         setSteps([...steps, newStep]);

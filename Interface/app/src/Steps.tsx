@@ -17,7 +17,20 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
-import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
+import { TrashIcon } from '@radix-ui/react-icons';
+import {
+    Popover,
+    PopoverTrigger,
+    PopoverContent,
+} from '@/components/ui/popover';
+import {
+    Command,
+    CommandGroup,
+    CommandItem,
+    CommandList,
+} from '@/components/ui/command';
+import { ChevronsUpDown } from 'lucide-react'; // Or use an alternative icon
+// If you don't have lucide-react, you can use another icon library
 
 const Steps: React.FC = () => {
     const {
@@ -33,6 +46,14 @@ const Steps: React.FC = () => {
 
     // Filter steps for the selected job
     const jobSteps = steps.filter((step) => step.jobId === selectedJobId);
+
+    const availableSteps = [
+        { id: 'step1', title: 'Install dependencies' },
+        { id: 'step2', title: 'Run build' },
+        { id: 'step3', title: 'Deploy to server' },
+    ];
+
+    const [open, setOpen] = React.useState(false);
 
     return (
         <div className="flex flex-col">
@@ -93,9 +114,39 @@ const Steps: React.FC = () => {
                 </TableBody>
             </Table>
             <div className="flex items-center justify-center mt-2">
-                <Button onClick={addStep} variant="outline">
-                    <PlusIcon />
-                </Button>
+                {/* CHANGE CODE HERE */}
+                <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                        <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={open}
+                            className="w-[200px] justify-between"
+                        >
+                            Add step...
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0">
+                        <Command>
+                            <CommandList>
+                                <CommandGroup>
+                                    {availableSteps.map((step) => (
+                                        <CommandItem
+                                            key={step.id}
+                                            onSelect={() => {
+                                                addStep(step.title);
+                                                setOpen(false);
+                                            }}
+                                        >
+                                            {step.title}
+                                        </CommandItem>
+                                    ))}
+                                </CommandGroup>
+                            </CommandList>
+                        </Command>
+                    </PopoverContent>
+                </Popover>
             </div>
         </div>
     );
