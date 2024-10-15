@@ -79,7 +79,6 @@ const JobTable: React.FC = () => {
                                                 checked={job.enabled}
                                                 onCheckedChange={() => toggleJobEnabled(job.id)}
                                                 onClick={(e) => e.stopPropagation()}
-                                                className="border border-gray-400 bg-white checked:bg-black checked:border-black"
                                             />
                                         </TableCell>
                                         <TableCell>

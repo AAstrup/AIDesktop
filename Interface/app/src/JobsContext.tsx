@@ -1,5 +1,8 @@
 // JobsContext.tsx
 import React, { createContext, useContext, useState } from 'react';
+import fs from 'fs';
+import path from 'path';
+import axios from 'axios';
 
 export interface Job {
     id: number;
@@ -10,8 +13,19 @@ export interface Job {
 export interface Step {
     id: number;
     jobId: number;
-    title: string;
+    name: string;
+    version: string;
+    github: string;
+    zipDownload: string;
     enabled: boolean;
+}
+
+// New type for available steps from GitHub
+export interface AvailableStep {
+    name: string;
+    version: string;
+    github: string;
+    zipDownload: string;
 }
 
 interface JobsContextType {
@@ -26,12 +40,12 @@ interface JobsContextType {
     updateJobTitle: (id: number, title: string) => void;
     selectJob: (id: number | null) => void;
     // Step functions
-    addStep: (title: string) => void;
+    addStep: (stepData: AvailableStep) => Promise<void>;
     deleteStep: (id: number) => void;
     toggleStepEnabled: (id: number) => void;
-    updateStepTitle: (id: number, title: string) => void;
+    updateStepDetail: (id: number, field: keyof Step, value: any) => void;
     selectStep: (id: number | null) => void;
-    updateStepDetail: (id: number, field: string, value: any) => void;
+    updateStepTitle: (id: number, title: string) => void;
 }
 
 const JobsContext = createContext<JobsContextType>({} as JobsContextType);
@@ -39,18 +53,16 @@ const JobsContext = createContext<JobsContextType>({} as JobsContextType);
 export const useJobs = () => useContext(JobsContext);
 
 type Props = {
-    children?: React.ReactNode
+    children?: React.ReactNode;
 };
+
 export const JobsProvider: React.FC<Props> = ({ children }) => {
     const [jobs, setJobs] = useState<Job[]>([
         { id: 1, title: 'Job 1', enabled: true },
         { id: 2, title: 'Job 2', enabled: false },
     ]);
 
-    const [steps, setSteps] = useState<Step[]>([
-        { id: 1, jobId: 1, title: 'Step 1', enabled: true },
-        { id: 2, jobId: 1, title: 'Step 2', enabled: false },
-    ]);
+    const [steps, setSteps] = useState<Step[]>([]);
 
     const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
     const [selectedStepId, setSelectedStepId] = useState<number | null>(null);
@@ -94,17 +106,56 @@ export const JobsProvider: React.FC<Props> = ({ children }) => {
     };
 
     // Step management functions
-    const addStep = (title: string) => {
+    const addStep = async (stepData: AvailableStep) => {
         if (selectedJobId === null) return;
 
         const newId = steps.length > 0 ? steps[steps.length - 1].id + 1 : 1;
         const newStep: Step = {
             id: newId,
             jobId: selectedJobId,
-            title: title,
             enabled: true,
+            ...stepData,
         };
         setSteps([...steps, newStep]);
+
+        // Now perform the download and extraction
+        try {
+            // Download the zip file
+            const response = await axios.get(stepData.zipDownload, {
+                responseType: 'arraybuffer',
+            });
+            const zipData = response.data;
+
+            // Determine paths
+            // Adjust the base path as needed
+            const basePath = path.join(__dirname, '..', '..'); // AIDesktop directory
+            const appsFolderPath = path.join(basePath, 'Apps');
+            const appFolderPath = path.join(appsFolderPath, stepData.name);
+
+            // Create the main app folder if it doesn't exist
+            if (!fs.existsSync(appFolderPath)) {
+                fs.mkdirSync(appFolderPath, { recursive: true });
+            }
+
+            // Create subfolders
+            const subfolders = ['app', 'context', 'errors', 'formats', 'requests', 'responses'];
+            subfolders.forEach((folder) => {
+                const folderPath = path.join(appFolderPath, folder);
+                if (!fs.existsSync(folderPath)) {
+                    fs.mkdirSync(folderPath);
+                }
+            });
+
+            // Extract the zip content into the 'app' subfolder
+            // const appSubFolderPath = path.join(appFolderPath, 'app');
+            // const AdmZip = window.require('adm-zip');
+            // const zip = new AdmZip(zipData);
+            // zip.extractAllTo(appSubFolderPath, true);
+
+            console.log(`App ${stepData.name} downloaded and extracted successfully.`);
+        } catch (error) {
+            console.error('Error downloading or extracting zip file:', error);
+        }
     };
 
     const deleteStep = (id: number) => {
@@ -132,7 +183,11 @@ export const JobsProvider: React.FC<Props> = ({ children }) => {
         setSelectedStepId(id);
     };
 
-    const updateStepDetail = (id: number, field: string, value: any) => {
+    const updateStepDetail = (
+        id: number,
+        field: keyof Step,
+        value: any
+    ) => {
         setSteps(
             steps.map((step) =>
                 step.id === id ? { ...step, [field]: value } : step

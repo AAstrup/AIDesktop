@@ -18,27 +18,13 @@ import {
     DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import { TrashIcon } from '@radix-ui/react-icons';
-import {
-    Popover,
-    PopoverTrigger,
-    PopoverContent,
-} from '@/components/ui/popover';
-import {
-    Command,
-    CommandGroup,
-    CommandItem,
-    CommandList,
-} from '@/components/ui/command';
-import { ChevronsUpDown } from 'lucide-react'; // Or use an alternative icon
-// If you don't have lucide-react, you can use another icon library
+import StepComboBox from './StepComboBox';
 
 const Steps: React.FC = () => {
     const {
         steps,
-        addStep,
         deleteStep,
         toggleStepEnabled,
-        updateStepTitle,
         selectedJobId,
         selectStep,
         selectedStepId,
@@ -47,20 +33,13 @@ const Steps: React.FC = () => {
     // Filter steps for the selected job
     const jobSteps = steps.filter((step) => step.jobId === selectedJobId);
 
-    const availableSteps = [
-        { id: 'step1', title: 'Install dependencies' },
-        { id: 'step2', title: 'Run build' },
-        { id: 'step3', title: 'Deploy to server' },
-    ];
-
-    const [open, setOpen] = React.useState(false);
-
     return (
         <div className="flex flex-col">
             <Table className="w-full">
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Title</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Version</TableHead>
                         <TableHead className="w-20">Enabled</TableHead>
                         <TableHead className="w-20">Actions</TableHead>
                     </TableRow>
@@ -74,20 +53,16 @@ const Steps: React.FC = () => {
                                 }`}
                         >
                             <TableCell>
-                                <input
-                                    type="text"
-                                    value={step.title}
-                                    onChange={(e) => updateStepTitle(step.id, e.target.value)}
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="w-full px-2 py-1 border border-gray-300 rounded"
-                                />
+                                {step.name}
+                            </TableCell>
+                            <TableCell>
+                                {step.version}
                             </TableCell>
                             <TableCell>
                                 <Checkbox
                                     checked={step.enabled}
                                     onCheckedChange={() => toggleStepEnabled(step.id)}
                                     onClick={(e) => e.stopPropagation()}
-                                    className="border border-gray-400 bg-white checked:bg-black checked:border-black"
                                 />
                             </TableCell>
                             <TableCell>
@@ -114,39 +89,7 @@ const Steps: React.FC = () => {
                 </TableBody>
             </Table>
             <div className="flex items-center justify-center mt-2">
-                {/* CHANGE CODE HERE */}
-                <Popover open={open} onOpenChange={setOpen}>
-                    <PopoverTrigger asChild>
-                        <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={open}
-                            className="w-[200px] justify-between"
-                        >
-                            Add step...
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="p-0">
-                        <Command>
-                            <CommandList>
-                                <CommandGroup>
-                                    {availableSteps.map((step) => (
-                                        <CommandItem
-                                            key={step.id}
-                                            onSelect={() => {
-                                                addStep(step.title);
-                                                setOpen(false);
-                                            }}
-                                        >
-                                            {step.title}
-                                        </CommandItem>
-                                    ))}
-                                </CommandGroup>
-                            </CommandList>
-                        </Command>
-                    </PopoverContent>
-                </Popover>
+                <StepComboBox />
             </div>
         </div>
     );

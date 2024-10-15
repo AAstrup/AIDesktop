@@ -1,5 +1,4 @@
 // App.tsx
-import React from 'react';
 import JobTable from './JobTable';
 import { JobsProvider } from './JobsContext';
 

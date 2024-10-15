@@ -3,7 +3,7 @@ import React from 'react';
 import { useJobs } from './JobsContext';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Button } from './components/ui/button';
+import { Button } from '@/components/ui/button';
 
 const StepDetails: React.FC = () => {
     const { steps, selectedStepId, updateStepDetail } = useJobs();
@@ -16,38 +16,53 @@ const StepDetails: React.FC = () => {
     }
 
     return (
-        <div className='flex flex-grows'>
-            <div className='flex flex-grows flex-col gap-4'>
+        <div className="flex flex-grow">
+            <div className="flex flex-col gap-4">
                 <Card className="p-4">
                     <h2 className="text-xl font-bold mb-4">Step Details</h2>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium">Title</label>
+                            <label className="block text-sm font-medium">Name</label>
                             <Input
-                                value={selectedStep.title}
-                                onChange={(e) => updateStepDetail(selectedStep.id, 'title', e.target.value)}
+                                value={selectedStep.name}
+                                onChange={(e) =>
+                                    updateStepDetail(selectedStep.id, 'name', e.target.value)
+                                }
                             />
                         </div>
-                        {/* Add more detail fields as needed */}
+                        <div>
+                            <label className="block text-sm font-medium">Version</label>
+                            <Input
+                                value={selectedStep.version}
+                                onChange={(e) =>
+                                    updateStepDetail(selectedStep.id, 'version', e.target.value)
+                                }
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium">GitHub URL</label>
+                            <Input
+                                value={selectedStep.github}
+                                onChange={(e) =>
+                                    updateStepDetail(selectedStep.id, 'github', e.target.value)
+                                }
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium">Download URL</label>
+                            <Input
+                                value={selectedStep.zipDownload}
+                                onChange={(e) =>
+                                    updateStepDetail(selectedStep.id, 'zipDownload', e.target.value)
+                                }
+                            />
+                        </div>
                     </div>
                 </Card>
-                <div className='flex flex-col p-4 gap-2'>
-                    <Input className='flex' />
-                    <Button className='flex'> Generate integration </Button>
+                <div className="flex flex-col p-4 gap-2">
+                    <Input placeholder="Integration details..." />
+                    <Button>Generate Integration</Button>
                 </div>
-                <Card className="p-4">
-                    <h2 className="text-xl font-bold mb-4">Step Details</h2>
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium">Title</label>
-                            <Input
-                                value={selectedStep.title}
-                                onChange={(e) => updateStepDetail(selectedStep.id, 'title', e.target.value)}
-                            />
-                        </div>
-                        {/* Add more detail fields as needed */}
-                    </div>
-                </Card>
             </div>
         </div>
     );
