@@ -1,8 +1,5 @@
 // JobsContext.tsx
 import React, { createContext, useContext, useState } from 'react';
-import fs from 'fs';
-import path from 'path';
-import axios from 'axios';
 
 export interface Job {
     id: number;
@@ -109,52 +106,20 @@ export const JobsProvider: React.FC<Props> = ({ children }) => {
     const addStep = async (stepData: AvailableStep) => {
         if (selectedJobId === null) return;
 
-        const newId = steps.length > 0 ? steps[steps.length - 1].id + 1 : 1;
-        const newStep: Step = {
-            id: newId,
-            jobId: selectedJobId,
-            enabled: true,
-            ...stepData,
-        };
-        setSteps([...steps, newStep]);
+        const result = await window.api.addStep(stepData);
 
-        // Now perform the download and extraction
-        try {
-            // Download the zip file
-            const response = await axios.get(stepData.zipDownload, {
-                responseType: 'arraybuffer',
-            });
-            const zipData = response.data;
-
-            // Determine paths
-            // Adjust the base path as needed
-            const basePath = path.join(__dirname, '..', '..'); // AIDesktop directory
-            const appsFolderPath = path.join(basePath, 'Apps');
-            const appFolderPath = path.join(appsFolderPath, stepData.name);
-
-            // Create the main app folder if it doesn't exist
-            if (!fs.existsSync(appFolderPath)) {
-                fs.mkdirSync(appFolderPath, { recursive: true });
-            }
-
-            // Create subfolders
-            const subfolders = ['app', 'context', 'errors', 'formats', 'requests', 'responses'];
-            subfolders.forEach((folder) => {
-                const folderPath = path.join(appFolderPath, folder);
-                if (!fs.existsSync(folderPath)) {
-                    fs.mkdirSync(folderPath);
-                }
-            });
-
-            // Extract the zip content into the 'app' subfolder
-            // const appSubFolderPath = path.join(appFolderPath, 'app');
-            // const AdmZip = window.require('adm-zip');
-            // const zip = new AdmZip(zipData);
-            // zip.extractAllTo(appSubFolderPath, true);
-
-            console.log(`App ${stepData.name} downloaded and extracted successfully.`);
-        } catch (error) {
-            console.error('Error downloading or extracting zip file:', error);
+        if (result.success) {
+            const newId = steps.length > 0 ? steps[steps.length - 1].id + 1 : 1;
+            const newStep: Step = {
+                id: newId,
+                jobId: selectedJobId,
+                enabled: true,
+                ...stepData,
+            };
+            setSteps([...steps, newStep]);
+            console.log(`App ${stepData.name} added successfully.`);
+        } else {
+            console.error('Error adding step:', result.error);
         }
     };
 

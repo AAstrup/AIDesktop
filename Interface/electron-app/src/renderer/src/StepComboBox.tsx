@@ -36,6 +36,7 @@ const StepComboBox: React.FC = () => {
                 const response = await fetch(
                     'https://raw.githubusercontent.com/AAstrup/AIDesktop-Apps/main/appsRegistry.json'
                 );
+                debugger
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
