@@ -10,6 +10,7 @@ declare global {
 
   interface Api {
     addStep: (stepData: AvailableStep) => Promise<{ success: boolean; error?: string }>
+    fetchAppsRegistry: () => Promise<AvailableStep[]> // Adjust the return type if you have a specific structure
   }
 
   interface Window {

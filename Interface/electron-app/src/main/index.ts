@@ -9,6 +9,7 @@ import icon from '../../resources/icon.png?asset' // Adjust the path if necessar
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
+const __desktopdir = join(__dirname, '..', '..', '..', '..')
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -56,9 +57,9 @@ app.whenReady().then(() => {
       })
       const zipData = response.data
 
-      const basePath = join(__dirname, '..', '..') // Adjust as necessary
-      const appsFolderPath = join(basePath, 'Apps')
+      const appsFolderPath = join(__desktopdir, 'Apps')
       const appFolderPath = join(appsFolderPath, stepData.name)
+      console.log(`App ${stepData.name} downloaded start extract to ${appFolderPath}.`)
 
       if (!fs.existsSync(appFolderPath)) {
         fs.mkdirSync(appFolderPath, { recursive: true })
@@ -81,6 +82,22 @@ app.whenReady().then(() => {
       return { success: true }
     } catch (error: any) {
       console.error('Error downloading or extracting zip file:', error)
+      return { success: false, error: error.message }
+    }
+  })
+
+  ipcMain.handle('fetch-apps-registry', async () => {
+    try {
+      const response = await fetch(
+        'https://raw.githubusercontent.com/AAstrup/AIDesktop-Apps/main/appsRegistry.json'
+      )
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`)
+      }
+      const data = await response.json()
+      return { success: true, data }
+    } catch (error: any) {
+      console.error('Error fetching apps registry:', error)
       return { success: false, error: error.message }
     }
   })

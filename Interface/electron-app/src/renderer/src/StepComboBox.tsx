@@ -33,15 +33,8 @@ const StepComboBox: React.FC = () => {
         // Fetch the available steps from GitHub
         const fetchSteps = async () => {
             try {
-                const response = await fetch(
-                    'https://raw.githubusercontent.com/AAstrup/AIDesktop-Apps/main/appsRegistry.json'
-                );
-                debugger
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data: AvailableStep[] = await response.json();
-                setAvailableSteps(data);
+                const availableSteps = await window.api.fetchAppsRegistry()
+                setAvailableSteps(availableSteps);
             } catch (error) {
                 console.error('Failed to fetch steps:', error);
             }
