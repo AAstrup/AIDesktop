@@ -8,6 +8,7 @@ export interface Step {
   jobName: string
   stepNumber: number
   appName: string
+  connected: boolean 
 }
 
 export interface AvailableStep {
@@ -54,7 +55,8 @@ export const JobsProvider: React.FC<Props> = ({ children }) => {
             job.steps.map((step) => ({
               jobName: job.jobName,
               stepNumber: step.stepNumber,
-              appName: step.appName
+              appName: step.appName,
+              connected: step.connected // Include connected status
             }))
           )
         )

@@ -23,10 +23,17 @@ export function registerGetJobsAndStepsHandler(ipcMain: IpcMain, __desktopdir: s
               return fs.statSync(join(jobFolderPath, file)).isDirectory()
             })
             .map((stepFolderName) => {
-              const [stepNumber, appName] = stepFolderName.split('_')
+              const [stepNumberStr, appName] = stepFolderName.split('_')
+              const stepNumber = parseInt(stepNumberStr)
+              
+              // Check if mapping file exists
+              const mappingFilePath = join(jobFolderPath, `mapping_${stepNumber}_to_${stepNumber + 1}.js`)
+              const connected = fs.existsSync(mappingFilePath)
+              
               return {
-                stepNumber: parseInt(stepNumber),
-                appName: appName
+                stepNumber,
+                appName,
+                connected
               }
             })
 

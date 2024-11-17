@@ -26,6 +26,7 @@ const Steps: React.FC = () => {
           <TableRow>
             <TableHead>Step Number</TableHead>
             <TableHead>App Name</TableHead>
+            <TableHead>Status</TableHead>
             <TableHead className="w-20">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -40,6 +41,13 @@ const Steps: React.FC = () => {
             >
               <TableCell>{step.stepNumber}</TableCell>
               <TableCell>{step.appName}</TableCell>
+              <TableCell>
+                {step.connected ? (
+                  <span className="text-green-600">Connected</span>
+                ) : (
+                  <span className="text-red-600">Not Connected</span>
+                )}
+              </TableCell>
               <TableCell>
                 <Button
                   variant="ghost"

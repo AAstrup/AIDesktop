@@ -1,6 +1,7 @@
 import { IpcMain } from 'electron'
 import { join } from 'path'
 import fs from 'fs'
+import { generateMappingCode } from '../utils/mappingGenerator' // Import the new utility function
 
 export function registerConnectStepHandler(ipcMain: IpcMain, __desktopdir: string) {
   ipcMain.handle('connect-step', async (event, { jobName, stepIndex }) => {
@@ -71,22 +72,13 @@ export function registerConnectStepHandler(ipcMain: IpcMain, __desktopdir: strin
       const toRequestFormatFile = join(toAppFormatsPath, toRequestFormats[0])
       const toRequestFormat = JSON.parse(fs.readFileSync(toRequestFormatFile, 'utf-8'))
 
-      // Generate JavaScript code to map fromResponseFormat to toRequestFormat
-      let mappingCode = 'function mapResponseToRequest(response) {\n'
-      mappingCode += '  return {\n'
-
-      for (const key in toRequestFormat) {
-        if (fromResponseFormat.hasOwnProperty(key)) {
-          mappingCode += `    "${key}": response["${key}"],\n`
-        } else {
-          // Provide a default value or leave undefined
-          mappingCode += `    "${key}": undefined, // TODO: Provide value\n`
-        }
-      }
-
-      mappingCode += '  };\n'
-      mappingCode += '}\n'
-      mappingCode += 'module.exports = mapResponseToRequest;\n'
+      // Use OpenAI API to generate the mapping code
+      const mappingCode = await generateMappingCode(
+        fromResponseFormat,
+        toRequestFormat,
+        fromAppName,
+        toAppName
+      )
 
       // Save the mapping code to a file in the job folder
       const mappingFilePath = join(jobFolderPath, `mapping_${stepIndex}_to_${toStepIndex}.js`)

@@ -14,6 +14,9 @@ import { registerConnectStepHandler } from './handlers/connectStep'
 import { registerDeleteJobHandler } from './handlers/deleteJob' // Add this line
 import { registerDeleteStepHandler } from './handlers/deleteStep' // Add this line
 import { registerGetJobsAndStepsHandler } from './handlers/getJobsAndSteps' // Add this line
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 // Shared variables
 const __filename = fileURLToPath(import.meta.url)

@@ -12,18 +12,20 @@ const StepDetails: React.FC = () => {
 
   const handleConnectStep = async () => {
     if (!selectedJobName || selectedStepNumber === null) {
-        console.error('No job or step selected.')
+      alert('No job or step selected.')
       return
     }
-
+  
     try {
       const mappingCode = await window.api.connectStep({
         jobName: selectedJobName,
         stepIndex: selectedStepNumber
       })
       console.log('Mapping code:', mappingCode)
+      alert('Steps connected successfully.')
     } catch (error) {
       console.error('Error connecting steps:', error)
+      alert(`Error: ${error}`)
     }
   }
 
