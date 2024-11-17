@@ -1,186 +1,158 @@
-// JobsContext.tsx
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react'
 
 export interface Job {
-    id: number;
-    title: string;
-    enabled: boolean;
+  name: string
 }
 
 export interface Step {
-    id: number;
-    jobId: number;
-    name: string;
-    version: string;
-    github: string;
-    zipDownload: string;
-    enabled: boolean;
+  jobName: string
+  stepNumber: number
+  appName: string
 }
 
-// New type for available steps from GitHub
 export interface AvailableStep {
-    name: string;
-    version: string;
-    github: string;
-    zipDownload: string;
+  name: string
+  version: string
+  github: string
+  zipDownload: string
 }
 
 interface JobsContextType {
-    jobs: Job[];
-    steps: Step[];
-    selectedJobId: number | null;
-    selectedStepId: number | null;
-    // Job functions
-    addJob: () => void;
-    deleteJob: (id: number) => void;
-    toggleJobEnabled: (id: number) => void;
-    updateJobTitle: (id: number, title: string) => void;
-    selectJob: (id: number | null) => void;
-    // Step functions
-    addStep: (stepData: AvailableStep) => Promise<void>;
-    deleteStep: (id: number) => void;
-    toggleStepEnabled: (id: number) => void;
-    updateStepDetail: (id: number, field: keyof Step, value: any) => void;
-    selectStep: (id: number | null) => void;
-    updateStepTitle: (id: number, title: string) => void;
+  jobs: Job[]
+  steps: Step[]
+  selectedJobName: string | null
+  selectedStepNumber: number | null
+  addJob: (jobName: string) => Promise<void>
+  deleteJob: (jobName: string) => Promise<void>
+  selectJob: (jobName: string | null) => void
+  addStep: (appName: string) => Promise<void>
+  deleteStep: (stepNumber: number) => Promise<void>
+  selectStep: (stepNumber: number | null) => void
 }
 
-const JobsContext = createContext<JobsContextType>({} as JobsContextType);
+const JobsContext = createContext<JobsContextType>({} as JobsContextType)
 
-export const useJobs = () => useContext(JobsContext);
+export const useJobs = () => useContext(JobsContext)
 
 type Props = {
-    children?: React.ReactNode;
-};
+  children?: React.ReactNode
+}
 
 export const JobsProvider: React.FC<Props> = ({ children }) => {
-    const [jobs, setJobs] = useState<Job[]>([
-        { id: 1, title: 'Job 1', enabled: true },
-        { id: 2, title: 'Job 2', enabled: false },
-    ]);
+  const [jobs, setJobs] = useState<Job[]>([])
+  const [steps, setSteps] = useState<Step[]>([])
+  const [selectedJobName, setSelectedJobName] = useState<string | null>(null)
+  const [selectedStepNumber, setSelectedStepNumber] = useState<number | null>(null)
 
-    const [steps, setSteps] = useState<Step[]>([]);
-
-    const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
-    const [selectedStepId, setSelectedStepId] = useState<number | null>(null);
-
-    // Job management functions
-    const addJob = () => {
-        const newId = jobs.length > 0 ? jobs[jobs.length - 1].id + 1 : 1;
-        const newJob: Job = {
-            id: newId,
-            title: `Job ${newId}`,
-            enabled: true,
-        };
-        setJobs([...jobs, newJob]);
-    };
-
-    const deleteJob = (id: number) => {
-        setJobs(jobs.filter((job) => job.id !== id));
-        setSteps(steps.filter((step) => step.jobId !== id));
-        if (selectedJobId === id) {
-            setSelectedJobId(null);
-        }
-    };
-
-    const toggleJobEnabled = (id: number) => {
-        setJobs(
-            jobs.map((job) =>
-                job.id === id ? { ...job, enabled: !job.enabled } : job
-            )
-        );
-    };
-
-    const updateJobTitle = (id: number, title: string) => {
-        setJobs(
-            jobs.map((job) => (job.id === id ? { ...job, title } : job))
-        );
-    };
-
-    const selectJob = (id: number | null) => {
-        setSelectedJobId(id);
-        setSelectedStepId(null);
-    };
-
-    // Step management functions
-    const addStep = async (stepData: AvailableStep) => {
-        if (selectedJobId === null) return;
-
-        const result = await window.api.addStep(stepData);
-
-        if (result.success) {
-            const newId = steps.length > 0 ? steps[steps.length - 1].id + 1 : 1;
-            const newStep: Step = {
-                id: newId,
-                jobId: selectedJobId,
-                enabled: true,
-                ...stepData,
-            };
-            setSteps([...steps, newStep]);
-            console.log(`App ${stepData.name} added successfully.`);
-        } else {
-            console.error('Error adding step:', result.error);
-        }
-    };
-
-    const deleteStep = (id: number) => {
-        setSteps(steps.filter((step) => step.id !== id));
-        if (selectedStepId === id) {
-            setSelectedStepId(null);
-        }
-    };
-
-    const toggleStepEnabled = (id: number) => {
+  useEffect(() => {
+    const fetchJobsAndSteps = async () => {
+      try {
+        const jobsData = await window.api.getJobsAndSteps()
+        setJobs(jobsData.map((job) => ({ name: job.jobName })))
         setSteps(
-            steps.map((step) =>
-                step.id === id ? { ...step, enabled: !step.enabled } : step
-            )
-        );
-    };
+          jobsData.flatMap((job) =>
+            job.steps.map((step) => ({
+              jobName: job.jobName,
+              stepNumber: step.stepNumber,
+              appName: step.appName
+            }))
+          )
+        )
+      } catch (error) {
+        console.error('Error fetching jobs and steps:', error)
+      }
+    }
 
-    const updateStepTitle = (id: number, title: string) => {
-        setSteps(
-            steps.map((step) => (step.id === id ? { ...step, title } : step))
-        );
-    };
+    fetchJobsAndSteps()
+  }, [])
 
-    const selectStep = (id: number | null) => {
-        setSelectedStepId(id);
-    };
+  const addJob = async (jobName: string) => {
+    try {
+      await window.api.addJob(jobName)
+      setJobs([...jobs, { name: jobName }])
+    } catch (error) {
+      console.error('Error adding job:', error)
+    }
+  }
 
-    const updateStepDetail = (
-        id: number,
-        field: keyof Step,
-        value: any
-    ) => {
-        setSteps(
-            steps.map((step) =>
-                step.id === id ? { ...step, [field]: value } : step
-            )
-        );
-    };
+  const deleteJob = async (jobName: string) => {
+    try {
+      await window.api.deleteJob(jobName)
+      setJobs(jobs.filter((job) => job.name !== jobName))
+      setSteps(steps.filter((step) => step.jobName !== jobName))
+      if (selectedJobName === jobName) {
+        setSelectedJobName(null)
+      }
+    } catch (error) {
+      console.error('Error deleting job:', error)
+    }
+  }
 
-    return (
-        <JobsContext.Provider
-            value={{
-                jobs,
-                steps,
-                selectedJobId,
-                selectedStepId,
-                addJob,
-                deleteJob,
-                toggleJobEnabled,
-                updateJobTitle,
-                selectJob,
-                addStep,
-                deleteStep,
-                toggleStepEnabled,
-                updateStepTitle,
-                selectStep,
-                updateStepDetail,
-            }}
-        >
-            {children}
-        </JobsContext.Provider>
-    );
-};
+  const selectJob = (jobName: string | null) => {
+    setSelectedJobName(jobName)
+    setSelectedStepNumber(null)
+  }
+
+  const addStep = async (appName: string) => {
+    if (!selectedJobName) return
+
+    try {
+      await window.api.addStep({ jobName: selectedJobName, appName })
+      const jobsData = await window.api.getJobsAndSteps()
+      const jobData = jobsData.find((job) => job.jobName === selectedJobName)
+      if (jobData) {
+        setSteps((prevSteps) => [
+          ...prevSteps.filter((step) => step.jobName !== selectedJobName),
+          ...jobData.steps.map((step) => ({
+            jobName: selectedJobName,
+            stepNumber: step.stepNumber,
+            appName: step.appName
+          }))
+        ])
+      }
+    } catch (error) {
+      console.error('Error adding step:', error)
+    }
+  }
+
+  const deleteStep = async (stepNumber: number) => {
+    if (!selectedJobName) return
+
+    try {
+      await window.api.deleteStep(selectedJobName, stepNumber)
+      setSteps(
+        steps.filter(
+          (step) => !(step.jobName === selectedJobName && step.stepNumber === stepNumber)
+        )
+      )
+      if (selectedStepNumber === stepNumber) {
+        setSelectedStepNumber(null)
+      }
+    } catch (error) {
+      console.error('Error deleting step:', error)
+    }
+  }
+
+  const selectStep = (stepNumber: number | null) => {
+    setSelectedStepNumber(stepNumber)
+  }
+
+  return (
+    <JobsContext.Provider
+      value={{
+        jobs,
+        steps: steps.filter((step) => step.jobName === selectedJobName),
+        selectedJobName,
+        selectedStepNumber,
+        addJob,
+        deleteJob,
+        selectJob,
+        addStep,
+        deleteStep,
+        selectStep
+      }}
+    >
+      {children}
+    </JobsContext.Provider>
+  )
+}

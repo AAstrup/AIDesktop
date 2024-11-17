@@ -8,13 +8,36 @@ declare global {
     zipDownload: string
   }
 
+  interface AppData {
+    name: string
+    version: string
+    github: string
+    zipDownload: string
+  }
+
+  interface AddStepData {
+    jobName: string
+    appName: string
+  }
+
+  interface ConnectStepParams {
+    jobName: string
+    stepIndex: number
+  }
+
   interface Api {
-    addStep: (stepData: AvailableStep) => Promise<{ success: boolean; error?: string }>
-    fetchAppsRegistry: () => Promise<AvailableStep[]> // Adjust the return type if you have a specific structure
+    fetchAppsRegistry: () => Promise<AvailableStep[]>
+    downloadApp: (appData: AppData) => Promise<void>
+    addJob: (jobName: string) => Promise<void>
+    deleteJob: (jobName: string) => Promise<void>
+    addStep: (stepData: AddStepData) => Promise<void>
+    deleteStep: (jobName: string, stepNumber: number) => Promise<void>
+    connectStep: (params: ConnectStepParams) => Promise<string>
+    getJobsAndSteps: () => Promise<any[]>
   }
 
   interface Window {
-    electron: unknown // Replace 'unknown' with the correct type if available.
+    electron: typeof electronAPI
     api: Api
   }
 }
